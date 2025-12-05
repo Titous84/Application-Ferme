@@ -1,16 +1,19 @@
 package com.ferme.bertbeach.controleurs;
 
+import com.ferme.bertbeach.infrastructure.sqlite.ParcelleSQLiteDAO;
+import com.ferme.bertbeach.parcelle.GestionParcellesService;
+import com.ferme.bertbeach.parcelle.Parcelle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.beans.property.SimpleStringProperty;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Optional;
 
 /**
  * Contrôleur de la page de gestion des parcelles.
- * Étape 2 : Mise en place de la structure, lecture seule,
- * sélection et liaison interface.
+ * Implémente les cas d'utilisation CU01, CU02 et CU03.
  */
 public class ParcellesListeController {
 
@@ -20,7 +23,7 @@ public class ParcellesListeController {
 
     @FXML private TextField champRecherche;
 
-    @FXML private ListView<String> listeParcelles;
+    @FXML private ListView<Parcelle> listeParcelles;
 
     @FXML private TextField champNom;
     @FXML private TextField champSuperficie;
@@ -39,25 +42,15 @@ public class ParcellesListeController {
 
     @FXML private Label messageSucces;
 
+    @FXML private TextArea zoneDetails;
+    @FXML private TextArea zoneHistorique;
 
     /* -----------------------------
-       DONNÉES TEMPORAIRES (étape 2)
+       DONNÉES & SERVICES
        ----------------------------- */
-
-    private final List<ParcelleTemp> parcelles = new ArrayList<>();
-
-    /**
-     * Classe temporaire pour tester l'interface.
-     * (sera remplacée plus tard par ton modèle réel)
-     */
-    private static class ParcelleTemp {
-        SimpleStringProperty nom = new SimpleStringProperty();
-        SimpleStringProperty superficie = new SimpleStringProperty();
-        SimpleStringProperty localisation = new SimpleStringProperty();
-        SimpleStringProperty culture = new SimpleStringProperty();
-        SimpleStringProperty sol = new SimpleStringProperty();
-    }
-
+    private GestionParcellesService service;
+    private final ObservableList<Parcelle> parcellesObservable = FXCollections.observableArrayList();
+    private Parcelle parcelleSelectionnee;
 
     /* -----------------------------
        INITIALISATION
@@ -72,11 +65,12 @@ public class ParcellesListeController {
         // Remplit les menus déroulants
         chargerMenusDeroulants();
 
-        // Charge quelques données de test
-        chargerParcellesDeTest();
+        // Initialisation du service connecté à SQLite
+        service = new GestionParcellesService(new ParcelleSQLiteDAO());
 
         // Sélection dans la liste
         listeParcelles.setOnMouseClicked(this::onSelectionParcelle);
+        listeParcelles.setItems(parcellesObservable);
 
         // Mode lecture seule désactivé par défaut
         appliquerLectureSeule(false);
@@ -85,6 +79,11 @@ public class ParcellesListeController {
         btnEnregistrer.setDisable(true);
         btnModifier.setDisable(true);
         btnSupprimer.setDisable(true);
+
+        chargerParcellesDepuisBd();
+
+        // Affichage initial vierge des zones de consultation
+        viderZonesInformations();
     }
 
     /**
@@ -124,31 +123,27 @@ public class ParcellesListeController {
 
 
     /* -----------------------------
-       DONNÉES TEST
+       CHARGEMENT DES DONNÉES
        ----------------------------- */
 
-    private void chargerParcellesDeTest() {
+    private void chargerParcellesDepuisBd() {
+        parcellesObservable.setAll(service.listerParcelles());
+        listeParcelles.refresh();
+    }
 
-        ParcelleTemp p1 = new ParcelleTemp();
-        p1.nom.set("Parcelle Nord");
-        p1.superficie.set("12.5");
-        p1.localisation.set("Zone Nord");
-        p1.culture.set("Maïs");
-        p1.sol.set("Limon");
+    private void viderChamps() {
+        champNom.clear();
+        champSuperficie.clear();
+        champLocalisation.clear();
+        champCulture.getSelectionModel().clearSelection();
+        typeSol.getSelectionModel().clearSelection();
+        messageSucces.setVisible(false);
+        viderZonesInformations();
+    }
 
-        ParcelleTemp p2 = new ParcelleTemp();
-        p2.nom.set("Parcelle Est");
-        p2.superficie.set("7.2");
-        p2.localisation.set("Zone Est");
-        p2.culture.set("Blé");
-        p2.sol.set("Argileux");
-
-        parcelles.add(p1);
-        parcelles.add(p2);
-
-        for (ParcelleTemp p : parcelles) {
-            listeParcelles.getItems().add(p.nom.get());
-        }
+    private void viderZonesInformations() {
+        zoneDetails.setText("Sélectionnez une parcelle puis cliquez sur Consulter pour afficher ses informations détaillées.");
+        zoneHistorique.setText("Historique des traitements non disponible pour l'instant.");
     }
 
 
@@ -158,18 +153,16 @@ public class ParcellesListeController {
 
     private void onSelectionParcelle(MouseEvent event) {
 
-        int index = listeParcelles.getSelectionModel().getSelectedIndex();
-        if (index < 0) return;
+        parcelleSelectionnee = listeParcelles.getSelectionModel().getSelectedItem();
+        if (parcelleSelectionnee == null) return;
 
-        ParcelleTemp p = parcelles.get(index);
-
-        champNom.setText(p.nom.get());
-        champSuperficie.setText(p.superficie.get());
-        champLocalisation.setText(p.localisation.get());
+        champNom.setText(parcelleSelectionnee.getNom());
+        champSuperficie.setText(String.valueOf(parcelleSelectionnee.getSuperficie()));
+        champLocalisation.setText(parcelleSelectionnee.getLocalisation());
 
         // ComboBox → on sélectionne la valeur
-        champCulture.getSelectionModel().select(p.culture.get());
-        typeSol.getSelectionModel().select(p.sol.get());
+        champCulture.getSelectionModel().select(parcelleSelectionnee.getCulture());
+        typeSol.getSelectionModel().select(parcelleSelectionnee.getTypeSol());
 
         btnModifier.setDisable(false);
         btnSupprimer.setDisable(false);
@@ -184,18 +177,145 @@ public class ParcellesListeController {
        ----------------------------- */
 
     @FXML
-    private void onAjouterParcelle() {}
+    private void onAjouterParcelle() {
+        listeParcelles.getSelectionModel().clearSelection();
+        parcelleSelectionnee = null;
+        viderChamps();
+        appliquerLectureSeule(false);
+        btnEnregistrer.setDisable(false);
+        btnModifier.setDisable(true);
+        btnSupprimer.setDisable(true);
+    }
 
     @FXML
-    private void onConsulterParcelle() {}
+    private void onConsulterParcelle() {
+        if (parcelleSelectionnee == null) {
+            afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Veuillez sélectionner une parcelle à consulter.");
+            return;
+        }
+        Optional<Parcelle> parcelle = service.consulterParcelle(parcelleSelectionnee.getId());
+        if (parcelle.isEmpty()) {
+            afficherAlerte(Alert.AlertType.ERROR, "Parcelle introuvable", "La parcelle sélectionnée n'existe plus en base de données.");
+            chargerParcellesDepuisBd();
+            return;
+        }
+        Parcelle p = parcelle.get();
+        afficherDetailsDansVue(p);
+    }
 
     @FXML
-    private void onModifierParcelle() {}
+    private void onModifierParcelle() {
+        if (parcelleSelectionnee == null) {
+            afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Veuillez sélectionner une parcelle à modifier.");
+            return;
+        }
+        appliquerLectureSeule(false);
+        btnEnregistrer.setDisable(false);
+        messageSucces.setVisible(false);
+    }
 
     @FXML
-    private void onSupprimerParcelle() {}
+    private void onSupprimerParcelle() {
+        if (parcelleSelectionnee == null) {
+            afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Veuillez sélectionner une parcelle à supprimer.");
+            return;
+        }
+        String messageConfirmation = "Voulez-vous vraiment supprimer la parcelle \"" + parcelleSelectionnee.getNom() +
+                "\" ?\nCette action est irréversible. Vous pouvez aussi choisir l'option d'archivage.";
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, messageConfirmation, ButtonType.OK, ButtonType.CANCEL);
+        confirmation.setHeaderText("Suppression de parcelle");
+        confirmation.showAndWait().ifPresent(reponse -> {
+            if (reponse == ButtonType.OK) {
+                try {
+                    service.supprimerParcelle(parcelleSelectionnee.getId());
+                    chargerParcellesDepuisBd();
+                    viderChamps();
+                    btnModifier.setDisable(true);
+                    btnSupprimer.setDisable(true);
+                    afficherMessageSucces("Parcelle supprimée avec succès.");
+                } catch (RuntimeException e) {
+                    afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer la parcelle : " + e.getMessage());
+                }
+            }
+        });
+    }
 
     @FXML
-    private void onEnregistrerParcelle() {}
+    private void onEnregistrerParcelle() {
+        try {
+            Parcelle parcelle = construireParcelleDepuisFormulaire();
+            Parcelle persistee = service.ajouterOuModifierParcelle(parcelle);
+            parcelleSelectionnee = persistee;
+            afficherMessageSucces("Parcelle enregistrée avec succès.");
+            chargerParcellesDepuisBd();
+            // Réappliquer la sélection si modification
+            if (persistee.getId() != null) {
+                selectionnerParcelleDansListe(persistee.getId());
+            }
+            btnEnregistrer.setDisable(true);
+            btnModifier.setDisable(false);
+            btnSupprimer.setDisable(false);
+            afficherDetailsDansVue(persistee);
+        } catch (IllegalArgumentException e) {
+            afficherAlerte(Alert.AlertType.WARNING, "Validation", e.getMessage());
+        } catch (RuntimeException e) {
+            afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Une erreur est survenue : " + e.getMessage());
+        }
+    }
 
+    private Parcelle construireParcelleDepuisFormulaire() {
+        String nom = champNom.getText();
+        String superficieTexte = champSuperficie.getText();
+        String localisation = champLocalisation.getText();
+        String culture = champCulture.getSelectionModel().getSelectedItem();
+        String sol = typeSol.getSelectionModel().getSelectedItem();
+
+        double superficie;
+        try {
+            superficie = Double.parseDouble(superficieTexte.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("La superficie doit être un nombre valide.");
+        }
+
+        Parcelle parcelle;
+        if (parcelleSelectionnee != null) {
+            parcelle = new Parcelle(parcelleSelectionnee.getId(), nom, superficie, localisation, sol, culture);
+        } else {
+            parcelle = new Parcelle(nom, superficie, localisation, sol, culture);
+        }
+        return parcelle;
+    }
+
+    private void selectionnerParcelleDansListe(int id) {
+        for (Parcelle p : parcellesObservable) {
+            if (p.getId() != null && p.getId() == id) {
+                listeParcelles.getSelectionModel().select(p);
+                parcelleSelectionnee = p;
+                break;
+            }
+        }
+    }
+
+    private void afficherDetailsDansVue(Parcelle p) {
+        String details = "Nom : " + p.getNom() + "\n" +
+                "Superficie : " + p.getSuperficie() + " ha\n" +
+                "Localisation : " + p.getLocalisation() + "\n" +
+                "Culture : " + (p.getCulture() == null ? "-" : p.getCulture()) + "\n" +
+                "Type de sol : " + p.getTypeSol();
+        zoneDetails.setText(details);
+
+        // La gestion des traitements n'étant pas persistée, on affiche une note informative.
+        zoneHistorique.setText("Historique des traitements :\n- Aucun traitement enregistré pour cette parcelle pour le moment.");
+    }
+
+    private void afficherAlerte(Alert.AlertType type, String titre, String message) {
+        Alert alert = new Alert(type, message, ButtonType.OK);
+        alert.setHeaderText(titre);
+        alert.showAndWait();
+    }
+
+    private void afficherMessageSucces(String message) {
+        messageSucces.setText(message);
+        messageSucces.setVisible(true);
+    }
 }
