@@ -17,16 +17,20 @@ import java.util.Optional;
  */
 public class ParcelleMemoireRepository implements ParcelleRepository {
 
-    private final Map<String, Parcelle> stockage = new HashMap<>();
+    private final Map<Integer, Parcelle> stockage = new HashMap<>();
 
     @Override
     public Parcelle enregistrer(Parcelle parcelle) {
-        stockage.put(parcelle.getIdentifiant(), parcelle);
+        // Génère un identifiant simple basé sur la taille actuelle du stockage
+        if (parcelle.getId() == null || parcelle.getId() == 0) {
+            parcelle.setId(stockage.size() + 1);
+        }
+        stockage.put(parcelle.getId(), parcelle);
         return parcelle;
     }
 
     @Override
-    public Optional<Parcelle> rechercherParId(String identifiant) {
+    public Optional<Parcelle> rechercherParId(int identifiant) {
         return Optional.ofNullable(stockage.get(identifiant));
     }
 
@@ -36,7 +40,7 @@ public class ParcelleMemoireRepository implements ParcelleRepository {
     }
 
     @Override
-    public boolean supprimer(String identifiant) {
+    public boolean supprimer(int identifiant) {
         return stockage.remove(identifiant) != null;
     }
 }
