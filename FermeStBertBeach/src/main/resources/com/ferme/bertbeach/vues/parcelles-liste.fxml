@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ferme.bertbeach.controleurs.ParcellesListeController">
+
+    <!-- ========================================================= -->
+    <!-- BARRE D'ONGLETS                                           -->
+    <!-- ========================================================= -->
+    <top>
+        <HBox spacing="0">
+            <children>
+                <Label text="Gestion des parcelles"
+                       style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-padding: 10 25; -fx-font-weight: bold; -fx-border-color: #1B5E20;" />
+
+                <Label text="Gestion des cultures"
+                       style="-fx-background-color: #E0E0E0; -fx-padding: 10 25;" />
+
+                <Label text="Gestion des traitements"
+                       style="-fx-background-color: #E0E0E0; -fx-padding: 10 25;" />
+
+                <Label text="Outils"
+                       style="-fx-background-color: #E0E0E0; -fx-padding: 10 25;" />
+            </children>
+        </HBox>
+    </top>
+
+    <!-- ========================================================= -->
+    <!-- COLONNE GAUCHE                                            -->
+    <!-- ========================================================= -->
+    <left>
+        <VBox spacing="15" prefWidth="260" style="-fx-background-color: #F5F5F5;">
+            <padding>
+                <Insets top="20" right="15" bottom="20" left="15"/>
+            </padding>
+
+            <children>
+
+                <Label text="Liste des parcelles"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+
+                <TextField fx:id="champRecherche" promptText="Rechercher une parcelle..." />
+
+                <ListView fx:id="listeParcelles" prefHeight="400" />
+
+                <Button fx:id="btnAjouterParcelle"
+                        text="Ajouter une nouvelle parcelle"
+                        onAction="#onAjouterParcelle"
+                        style="-fx-background-color: #90CAF9; -fx-font-weight: bold;"
+                        prefHeight="40"/>
+            </children>
+        </VBox>
+    </left>
+
+
+    <!-- ========================================================= -->
+    <!-- ZONE CENTRALE — CORRIGÉE POUR ÉVITER LE DÉBORDEMENT      -->
+    <!-- ========================================================= -->
+    <center>
+
+        <!-- ⚠️ Emballage dans un conteneur centré -->
+        <HBox alignment="TOP_CENTER">
+            <children>
+
+                <!-- ⚠️ LARGEUR MAXIMALE → empêche le formulaire de s'étirer -->
+                <VBox spacing="20" maxWidth="1100">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+
+                    <children>
+
+                        <Label text="Ajouter / Modifier une parcelle"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+
+                        <VBox spacing="15"
+                              style="-fx-background-color: #FFFFFF; -fx-border-color: #BDBDBD; -fx-border-radius: 15; -fx-background-radius: 15;">
+                            <padding>
+                                <Insets top="25" right="25" bottom="25" left="25"/>
+                            </padding>
+
+                            <children>
+                                <GridPane hgap="20" vgap="15">
+                                    <columnConstraints>
+                                        <ColumnConstraints percentWidth="30"/>
+                                        <ColumnConstraints percentWidth="70"/>
+                                    </columnConstraints>
+
+                                    <children>
+
+                                        <Label text="Nom :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="champNom"
+                                                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                                   promptText="Champ Nord, Prairie..." />
+
+                                        <Label text="Superficie (ha) :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="champSuperficie"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                                   promptText="0.0" />
+
+                                        <Label text="Localisation :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="champLocalisation"
+                                                   GridPane.rowIndex="2" GridPane.columnIndex="1"
+                                                   promptText="Ex : Zone Nord" />
+
+                                        <Label text="Culture actuelle :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="champCulture"
+                                                   GridPane.rowIndex="3" GridPane.columnIndex="1"
+                                                   promptText="Maïs, blé..." />
+
+                                        <Label text="Historique :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <TextArea fx:id="champHistorique"
+                                                  prefRowCount="3"
+                                                  GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                    </children>
+                                </GridPane>
+                            </children>
+                        </VBox>
+
+
+                        <!-- BOUTONS -->
+                        <HBox spacing="20" alignment="CENTER_RIGHT">
+                            <children>
+
+                                <CheckBox fx:id="caseLectureSeule"
+                                          text="Mode lecture seule"
+                                          onAction="#onBasculerLectureSeule"/>
+
+                                <Button fx:id="btnConsulter" text="Consulter"
+                                        onAction="#onConsulterParcelle"/>
+
+                                <Button fx:id="btnModifier" text="Modifier"
+                                        onAction="#onModifierParcelle"/>
+
+                                <Button fx:id="btnSupprimer" text="Supprimer"
+                                        style="-fx-background-color: #FFCDD2;"
+                                        onAction="#onSupprimerParcelle"/>
+
+                                <Button fx:id="btnEnregistrer" text="Enregistrer"
+                                        style="-fx-background-color: #C8E6C9; -fx-font-weight: bold;"
+                                        onAction="#onEnregistrerParcelle"/>
+
+                            </children>
+                        </HBox>
+
+                        <!-- MESSAGE SUCCÈS -->
+                        <Label fx:id="messageSucces"
+                               text=""
+                               visible="false"
+                               style="-fx-background-color: #C8E6C9; -fx-padding: 10; -fx-background-radius: 5;"/>
+
+                    </children>
+                </VBox>
+
+            </children>
+        </HBox>
+
+    </center>
+
+
+    <!-- FOOTER -->
+    <bottom>
+        <Label text="Équipe – La Ferme de St-Bert-Beach | Version 1.0 | Automne 2025"
+               style="-fx-background-color: #EEEEEE; -fx-padding: 5 15; -fx-font-size: 11px;"/>
+    </bottom>
+
+</BorderPane>
