@@ -4,6 +4,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<!-- ========================================================================= -->
+<!-- PAGE : Gestion des parcelles                                               -->
+<!-- Inspiré du prototype fourni                                                -->
+<!-- ========================================================================= -->
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ferme.bertbeach.controleurs.ParcellesListeController">
@@ -15,7 +19,9 @@
         <HBox spacing="0">
             <children>
                 <Label text="Gestion des parcelles"
-                       style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-padding: 10 25; -fx-font-weight: bold; -fx-border-color: #1B5E20;" />
+                       style="-fx-background-color: #2E7D32; -fx-text-fill: white;
+                              -fx-padding: 10 25; -fx-font-weight: bold;
+                              -fx-border-color: #1B5E20;" />
 
                 <Label text="Gestion des cultures"
                        style="-fx-background-color: #E0E0E0; -fx-padding: 10 25;" />
@@ -28,6 +34,7 @@
             </children>
         </HBox>
     </top>
+
 
     <!-- ========================================================= -->
     <!-- COLONNE GAUCHE                                            -->
@@ -58,15 +65,13 @@
 
 
     <!-- ========================================================= -->
-    <!-- ZONE CENTRALE — CORRIGÉE POUR ÉVITER LE DÉBORDEMENT      -->
+    <!-- ZONE CENTRALE — FORMULAIRE                               -->
     <!-- ========================================================= -->
     <center>
 
-        <!-- ⚠️ Emballage dans un conteneur centré -->
         <HBox alignment="TOP_CENTER">
             <children>
 
-                <!-- ⚠️ LARGEUR MAXIMALE → empêche le formulaire de s'étirer -->
                 <VBox spacing="20" maxWidth="1100">
                     <padding>
                         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -74,11 +79,17 @@
 
                     <children>
 
+                        <!-- Titre -->
                         <Label text="Ajouter / Modifier une parcelle"
                                style="-fx-font-size: 20px; -fx-font-weight: bold;" />
 
+
+                        <!-- Conteneur du formulaire -->
                         <VBox spacing="15"
-                              style="-fx-background-color: #FFFFFF; -fx-border-color: #BDBDBD; -fx-border-radius: 15; -fx-background-radius: 15;">
+                              style="-fx-background-color: #FFFFFF;
+                                     -fx-border-color: #BDBDBD;
+                                     -fx-border-radius: 15;
+                                     -fx-background-radius: 15;">
                             <padding>
                                 <Insets top="25" right="25" bottom="25" left="25"/>
                             </padding>
@@ -92,37 +103,43 @@
 
                                     <children>
 
+                                        <!-- Nom -->
                                         <Label text="Nom :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                                         <TextField fx:id="champNom"
                                                    GridPane.rowIndex="0" GridPane.columnIndex="1"
-                                                   promptText="Champ Nord, Prairie..." />
+                                                   promptText=""/>
 
+                                        <!-- Superficie -->
                                         <Label text="Superficie (ha) :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                                         <TextField fx:id="champSuperficie"
                                                    GridPane.rowIndex="1" GridPane.columnIndex="1"
-                                                   promptText="0.0" />
+                                                   promptText=""/>
 
+                                        <!-- Localisation -->
                                         <Label text="Localisation :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                                         <TextField fx:id="champLocalisation"
                                                    GridPane.rowIndex="2" GridPane.columnIndex="1"
-                                                   promptText="Ex : Zone Nord" />
+                                                   promptText="Nord, Sud, ..."/>
 
-                                        <Label text="Culture actuelle :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                                        <TextField fx:id="champCulture"
-                                                   GridPane.rowIndex="3" GridPane.columnIndex="1"
-                                                   promptText="Maïs, blé..." />
+                                        <!-- Culture prévue → MENU DÉROULANT -->
+                                        <Label text="Culture prévue :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <ComboBox fx:id="champCulture"
+                                                  GridPane.rowIndex="3" GridPane.columnIndex="1"
+                                                  promptText="[ Menu déroulant ]"/>
 
-                                        <Label text="Historique :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                                        <TextArea fx:id="champHistorique"
-                                                  prefRowCount="3"
-                                                  GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                        <!-- Type de sol → MENU DÉROULANT -->
+                                        <Label text="Type de sol :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <ComboBox fx:id="typeSol"
+                                                  GridPane.rowIndex="4" GridPane.columnIndex="1"
+                                                  promptText="[ Menu déroulant ]"/>
+
                                     </children>
                                 </GridPane>
                             </children>
                         </VBox>
 
 
-                        <!-- BOUTONS -->
+                        <!-- Boutons -->
                         <HBox spacing="20" alignment="CENTER_RIGHT">
                             <children>
 
@@ -147,11 +164,14 @@
                             </children>
                         </HBox>
 
-                        <!-- MESSAGE SUCCÈS -->
+
+                        <!-- Message de succès -->
                         <Label fx:id="messageSucces"
                                text=""
                                visible="false"
-                               style="-fx-background-color: #C8E6C9; -fx-padding: 10; -fx-background-radius: 5;"/>
+                               style="-fx-background-color: #C8E6C9;
+                                      -fx-padding: 10;
+                                      -fx-background-radius: 5;"/>
 
                     </children>
                 </VBox>
@@ -165,7 +185,7 @@
     <!-- FOOTER -->
     <bottom>
         <Label text="Équipe – La Ferme de St-Bert-Beach | Version 1.0 | Automne 2025"
-               style="-fx-background-color: #EEEEEE; -fx-padding: 5 15; -fx-font-size: 11px;"/>
+               style="-fx-background-color: #EEEEEE; text-align : center; -fx-padding: 5 15; -fx-font-size: 11px;"/>
     </bottom>
 
 </BorderPane>
