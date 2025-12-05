@@ -26,8 +26,11 @@ public class GestionParcellesService {
         if (parcelle.getNom() == null || parcelle.getNom().isBlank()) {
             throw new IllegalArgumentException("Le nom de la parcelle est obligatoire.");
         }
-        if (parcelle.getSuperficieHectares() <= 0) {
+        if (parcelle.getSuperficie() <= 0) {
             throw new IllegalArgumentException("La superficie doit être positive.");
+        }
+        if (parcelle.getTypeSol() == null || parcelle.getTypeSol().isBlank()) {
+            throw new IllegalArgumentException("Le type de sol doit être sélectionné.");
         }
         // Ici on suppose que l'authentification a déjà été réalisée par une couche supérieure.
         return repository.enregistrer(parcelle);
@@ -36,14 +39,14 @@ public class GestionParcellesService {
     /**
      * Cas d'utilisation CU02 : supprimer une parcelle si elle existe.
      */
-    public boolean supprimerParcelle(String identifiant) {
+    public boolean supprimerParcelle(int identifiant) {
         return repository.supprimer(identifiant);
     }
 
     /**
      * Cas d'utilisation CU03 : consulter une parcelle.
      */
-    public Optional<Parcelle> consulterParcelle(String identifiant) {
+    public Optional<Parcelle> consulterParcelle(int identifiant) {
         return repository.rechercherParId(identifiant);
     }
 

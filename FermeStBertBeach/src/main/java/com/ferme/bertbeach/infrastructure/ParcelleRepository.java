@@ -11,9 +11,9 @@ import java.util.Optional;
 public interface ParcelleRepository {
     Parcelle enregistrer(Parcelle parcelle);
 
-    Optional<Parcelle> rechercherParId(String identifiant);
+    Optional<Parcelle> rechercherParId(int identifiant);
 
     List<Parcelle> listerToutes();
 
-    boolean supprimer(String identifiant);
+    boolean supprimer(int identifiant);
 }
