@@ -173,6 +173,21 @@
                                       -fx-padding: 10;
                                       -fx-background-radius: 5;"/>
 
+                        <!-- Zone de consultation détaillée -->
+                        <HBox spacing="15">
+                            <children>
+                                <VBox spacing="8" VBox.vgrow="ALWAYS" prefWidth="400">
+                                    <Label text="Détails de la parcelle" style="-fx-font-weight: bold;" />
+                                    <TextArea fx:id="zoneDetails" editable="false" wrapText="true" prefRowCount="6" />
+                                </VBox>
+
+                                <VBox spacing="8" VBox.vgrow="ALWAYS" prefWidth="400">
+                                    <Label text="Historique des traitements" style="-fx-font-weight: bold;" />
+                                    <TextArea fx:id="zoneHistorique" editable="false" wrapText="true" prefRowCount="6" />
+                                </VBox>
+                            </children>
+                        </HBox>
+
                     </children>
                 </VBox>
 

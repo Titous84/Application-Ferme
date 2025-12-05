@@ -42,6 +42,9 @@ public class ParcellesListeController {
 
     @FXML private Label messageSucces;
 
+    @FXML private TextArea zoneDetails;
+    @FXML private TextArea zoneHistorique;
+
     /* -----------------------------
        DONNÉES & SERVICES
        ----------------------------- */
@@ -78,6 +81,9 @@ public class ParcellesListeController {
         btnSupprimer.setDisable(true);
 
         chargerParcellesDepuisBd();
+
+        // Affichage initial vierge des zones de consultation
+        viderZonesInformations();
     }
 
     /**
@@ -132,6 +138,12 @@ public class ParcellesListeController {
         champCulture.getSelectionModel().clearSelection();
         typeSol.getSelectionModel().clearSelection();
         messageSucces.setVisible(false);
+        viderZonesInformations();
+    }
+
+    private void viderZonesInformations() {
+        zoneDetails.setText("Sélectionnez une parcelle puis cliquez sur Consulter pour afficher ses informations détaillées.");
+        zoneHistorique.setText("Historique des traitements non disponible pour l'instant.");
     }
 
 
@@ -188,12 +200,7 @@ public class ParcellesListeController {
             return;
         }
         Parcelle p = parcelle.get();
-        String details = "Nom : " + p.getNom() + "\n" +
-                "Superficie : " + p.getSuperficie() + " ha\n" +
-                "Localisation : " + p.getLocalisation() + "\n" +
-                "Culture : " + (p.getCulture() == null ? "-" : p.getCulture()) + "\n" +
-                "Type de sol : " + p.getTypeSol();
-        afficherAlerte(Alert.AlertType.INFORMATION, "Détails de la parcelle", details);
+        afficherDetailsDansVue(p);
     }
 
     @FXML
@@ -204,6 +211,7 @@ public class ParcellesListeController {
         }
         appliquerLectureSeule(false);
         btnEnregistrer.setDisable(false);
+        messageSucces.setVisible(false);
     }
 
     @FXML
@@ -212,7 +220,9 @@ public class ParcellesListeController {
             afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Veuillez sélectionner une parcelle à supprimer.");
             return;
         }
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, "Voulez-vous vraiment supprimer cette parcelle ?", ButtonType.OK, ButtonType.CANCEL);
+        String messageConfirmation = "Voulez-vous vraiment supprimer la parcelle \"" + parcelleSelectionnee.getNom() +
+                "\" ?\nCette action est irréversible. Vous pouvez aussi choisir l'option d'archivage.";
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, messageConfirmation, ButtonType.OK, ButtonType.CANCEL);
         confirmation.setHeaderText("Suppression de parcelle");
         confirmation.showAndWait().ifPresent(reponse -> {
             if (reponse == ButtonType.OK) {
@@ -234,16 +244,18 @@ public class ParcellesListeController {
     private void onEnregistrerParcelle() {
         try {
             Parcelle parcelle = construireParcelleDepuisFormulaire();
-            service.ajouterOuModifierParcelle(parcelle);
+            Parcelle persistee = service.ajouterOuModifierParcelle(parcelle);
+            parcelleSelectionnee = persistee;
             afficherMessageSucces("Parcelle enregistrée avec succès.");
             chargerParcellesDepuisBd();
             // Réappliquer la sélection si modification
-            if (parcelle.getId() != null) {
-                selectionnerParcelleDansListe(parcelle.getId());
+            if (persistee.getId() != null) {
+                selectionnerParcelleDansListe(persistee.getId());
             }
             btnEnregistrer.setDisable(true);
             btnModifier.setDisable(false);
             btnSupprimer.setDisable(false);
+            afficherDetailsDansVue(persistee);
         } catch (IllegalArgumentException e) {
             afficherAlerte(Alert.AlertType.WARNING, "Validation", e.getMessage());
         } catch (RuntimeException e) {
@@ -282,6 +294,18 @@ public class ParcellesListeController {
                 break;
             }
         }
+    }
+
+    private void afficherDetailsDansVue(Parcelle p) {
+        String details = "Nom : " + p.getNom() + "\n" +
+                "Superficie : " + p.getSuperficie() + " ha\n" +
+                "Localisation : " + p.getLocalisation() + "\n" +
+                "Culture : " + (p.getCulture() == null ? "-" : p.getCulture()) + "\n" +
+                "Type de sol : " + p.getTypeSol();
+        zoneDetails.setText(details);
+
+        // La gestion des traitements n'étant pas persistée, on affiche une note informative.
+        zoneHistorique.setText("Historique des traitements :\n- Aucun traitement enregistré pour cette parcelle pour le moment.");
     }
 
     private void afficherAlerte(Alert.AlertType type, String titre, String message) {
